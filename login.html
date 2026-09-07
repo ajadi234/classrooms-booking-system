@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Classroom Booking System</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <h1>
+        <img class="site-logo" src="{{ url_for('static', filename='images/unilesa_logo.png') }}" alt="University of Ilesa Logo">
+        Login
+    </h1>
+
+    <form action="/login" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label>Email or Matric Number</label><br>
+        <input type="text" name="login_id" placeholder="Enter Email or Matric Number" required>
+        <br><br>
+
+        <label>Password</label><br>
+        <div class="password-wrapper">
+            <input type="password" name="password" id="password" placeholder="Enter your password" required>
+            <button type="button" class="password-toggle-btn" onclick="togglePassword('password', this)">Show</button>
+        </div>
+        <br><br>
+
+        <button type="submit">Login</button>
+    </form>
+
+    <script>
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                btn.textContent = "Hide";
+            } else {
+                input.type = "password";
+                btn.textContent = "Show";
+            }
+        }
+    </script>
+
+    <br>
+    <p>Don't have an account? <a href="/register">Register Here</a></p>
+    <p><a href="/forgot-password">Forgot your password?</a></p>
+    <p><a href="/">Back Home</a></p>
+
+</body>
+</html>

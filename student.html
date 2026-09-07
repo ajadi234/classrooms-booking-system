@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <h1>
+        <img class="site-logo" src="{{ url_for('static', filename='images/unilesa_logo.png') }}" alt="University of Ilesa Logo">
+        Student Dashboard
+    </h1>
+
+    <p>
+        Welcome, <strong>{{ session.get("fullname") }}</strong>
+    </p>
+
+    <p>Role: <strong>Student</strong></p>
+
+    <a href="/logout">Logout</a>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <hr>
+
+    <!-- ================================= -->
+    <!-- CURRENT & UPCOMING BOOKINGS -->
+    <!-- ================================= -->
+
+    <h2>Lecture Hall Bookings</h2>
+
+    <p>Here you can see all scheduled lectures and the lecturers taking them.</p>
+
+    {% if bookings %}
+
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Lecture Hall</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Course</th>
+                <th>Lecturer</th>
+                <th>Purpose</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for booking in bookings %}
+            <tr>
+                <td>{{ booking["room"] }}</td>
+                <td>{{ booking["date"] }}</td>
+                <td>{{ booking["start_time"] }} - {{ booking["end_time"] }}</td>
+                <td>
+                    <strong>{{ booking["course_name"] or "Not specified" }}</strong>
+                </td>
+                <td>
+                    <strong>{{ booking["booked_by"] or "Unknown" }}</strong>
+                </td>
+                <td>{{ booking["purpose"] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+        <p>No lecture halls have been booked yet.</p>
+    {% endif %}
+
+    <br><br>
+
+    <!-- ================================= -->
+    <!-- AVAILABLE HALLS (Optional Info) -->
+    <!-- ================================= -->
+
+    <h2>Available Lecture Halls</h2>
+
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Lecture Hall</th>
+                <th>Location</th>
+                <th>Capacity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for room in classrooms %}
+            <tr>
+                <td>{{ room["name"] }}</td>
+                <td>{{ room["location"] }}</td>
+                <td>{{ room["capacity"] }} Students</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br><br>
+
+    <a href="/logout">Logout</a>
+
+</body>
+</html>

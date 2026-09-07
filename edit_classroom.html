@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Lecture Hall</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <h1>
+        <img class="site-logo" src="{{ url_for('static', filename='images/unilesa_logo.png') }}" alt="University of Ilesa Logo">
+        Edit Lecture Hall
+    </h1>
+
+    <form action="{{ url_for('edit_classroom', room_id=room['id']) }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label>Hall Name</label><br>
+        <input type="text" name="name" value="{{ room['name'] }}" required>
+        <br><br>
+
+        <label>Location</label><br>
+        <input type="text" name="location" value="{{ room['location'] }}" required>
+        <br><br>
+
+        <label>Capacity</label><br>
+        <input type="number" name="capacity" value="{{ room['capacity'] }}" min="1" required>
+        <br><br>
+
+        <button type="submit">Save Changes</button>
+        <a href="/admin">Cancel</a>
+    </form>
+
+</body>
+</html>

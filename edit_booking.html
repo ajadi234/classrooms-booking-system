@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Booking</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <h1>Edit Booking</h1>
+
+    <form action="{{ url_for('edit_booking', booking_id=booking['id']) }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label><strong>Lecture Hall</strong></label><br>
+        <select name="room" required>
+            {% for room in classrooms %}
+            <option value="{{ room.name }}" {% if room.name == booking['room'] %}selected{% endif %}>
+                {{ room.name }} - {{ room.location }} - {{ room.capacity }} Seats
+            </option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label><strong>Course Name</strong></label><br>
+        <input type="text" name="course_name" value="{{ booking['course_name'] or '' }}" placeholder="e.g. CSC 301 - Software Engineering">
+
+        <br><br>
+
+        <label><strong>Date</strong></label><br>
+        <input type="date" name="date" value="{{ booking['date'] }}" required>
+
+        <br><br>
+
+        <label><strong>Start Time</strong></label><br>
+        <input type="time" name="start_time" value="{{ booking['start_time'] }}" required>
+
+        <br><br>
+
+        <label><strong>End Time</strong></label><br>
+        <input type="time" name="end_time" value="{{ booking['end_time'] }}" required>
+
+        <br><br>
+
+        <label><strong>Purpose</strong></label><br>
+        <textarea name="purpose" rows="4" cols="40" required>{{ booking['purpose'] }}</textarea>
+
+        <br><br>
+
+        <button type="submit">Save Changes</button>
+        <a href="javascript:history.back()">Cancel</a>
+    </form>
+
+</body>
+</html>

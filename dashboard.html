@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Classroom Booking System</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <h1>
+        <img class="site-logo" src="{{ url_for('static', filename='images/unilesa_logo.png') }}" alt="University of Ilesa Logo">
+        Classroom Reservation and Booking System
+    </h1>
+
+    <h2>Dashboard</h2>
+
+    <p>
+        Welcome, <strong>{{ session.get("fullname") }}</strong>
+    </p>
+
+    <p>
+        Role: <strong>{{ session.get("role") }}</strong>
+    </p>
+
+    <a href="/logout">Logout</a>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <hr>
+
+    <!-- AVAILABLE CLASSROOMS -->
+    <h2>Available Lecture Halls</h2>
+
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Lecture Hall</th>
+                <th>Location</th>
+                <th>Capacity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for room in classrooms %}
+            <tr>
+                <td>{{ room.name }}</td>
+                <td>{{ room.location }}</td>
+                <td>{{ room.capacity }} Students</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+
+    <!-- BOOKING FORM -->
+    <h2>Book a Classroom</h2>
+
+    <form action="/book" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label><strong>Lecture Hall</strong></label><br>
+        <select name="room" required>
+            <option value="">-- Select a Lecture Hall --</option>
+            {% for room in classrooms %}
+            <option value="{{ room.name }}">
+                {{ room.name }} - {{ room.location }} - {{ room.capacity }} Seats
+            </option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label><strong>Course Name</strong></label><br>
+        <input type="text" name="course_name" placeholder="e.g. CSC 301 - Software Engineering">
+
+        <br><br>
+
+        <label><strong>Date</strong></label><br>
+        <input type="date" name="date" required>
+
+        <br><br>
+
+        <label><strong>Start Time</strong></label><br>
+        <input type="time" name="start_time" required>
+
+        <br><br>
+
+        <label><strong>End Time</strong></label><br>
+        <input type="time" name="end_time" required>
+
+        <br><br>
+
+        <label><strong>Purpose</strong></label><br>
+        <textarea name="purpose" rows="4" cols="40" placeholder="Enter the purpose of the booking" required></textarea>
+
+        <br><br>
+
+        <button type="submit">Book Classroom</button>
+    </form>
+
+    <hr>
+
+    <!-- CURRENT BOOKINGS -->
+    <h2>Current Bookings</h2>
+
+    {% if bookings %}
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Lecture Hall</th>
+                <th>Course</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Purpose</th>
+                <th>Booked By</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+            <tr>
+                <td>{{ booking["id"] }}</td>
+                <td>{{ booking["room"] }}</td>
+                <td>{{ booking["course_name"] or "Not specified" }}</td>
+                <td>{{ booking["date"] }}</td>
+                <td>{{ booking["start_time"] }} - {{ booking["end_time"] }}</td>
+                <td>{{ booking["purpose"] }}</td>
+                <td>{{ booking["booked_by"] or "Unknown" }}</td>
+                <td>
+                    {% if booking["user_id"] == session.get("user_id") or session.get("role") == "Admin" %}
+                        <a href="{{ url_for('edit_booking', booking_id=booking['id']) }}">Edit</a>
+                        &nbsp;|&nbsp;
+                        <form action="{{ url_for('delete_booking', booking_id=booking['id']) }}" method="POST" style="display:inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" onclick="return confirm('Are you sure you want to delete this booking?')">
+                                Delete
+                            </button>
+                        </form>
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No classroom has been booked yet.</p>
+    {% endif %}
+
+    <br>
+    <a href="/">Back Home</a>
+
+</body>
+</html>

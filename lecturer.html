@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecturer Dashboard</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <h1>
+        <img class="site-logo" src="{{ url_for('static', filename='images/unilesa_logo.png') }}" alt="University of Ilesa Logo">
+        Lecturer Dashboard
+    </h1>
+
+    <p>
+        Welcome, <strong>{{ session.get("fullname") }}</strong>
+    </p>
+
+    <p>Role: <strong>Lecturer</strong></p>
+
+    <a href="/logout">Logout</a>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <hr>
+
+    <!-- ================================= -->
+    <!-- CHECK AVAILABILITY -->
+    <!-- ================================= -->
+
+    <h2>Check Hall Availability</h2>
+
+    <form method="GET" action="/lecturer">
+
+        <label>Date:</label>
+        <input type="date" name="check_date" value="{{ check_date or '' }}" required>
+
+        <br><br>
+
+        <label>Start Time:</label>
+        <input type="time" name="check_start_time" value="{{ check_start_time or '' }}" required>
+
+        <br><br>
+
+        <label>End Time:</label>
+        <input type="time" name="check_end_time" value="{{ check_end_time or '' }}" required>
+
+        <br><br>
+
+        <button type="submit">Check Availability</button>
+
+    </form>
+
+    <br>
+
+    <!-- ================================= -->
+    <!-- AVAILABILITY TABLE -->
+    <!-- ================================= -->
+
+    <h2>Hall Availability</h2>
+
+    <table border="1" cellpadding="10">
+        <tr>
+            <th>Lecture Hall</th>
+            <th>Location</th>
+            <th>Capacity</th>
+            <th>Status</th>
+        </tr>
+
+        {% for room in classrooms %}
+        <tr>
+            <td>{{ room["name"] }}</td>
+            <td>{{ room["location"] }}</td>
+            <td>{{ room["capacity"] }} Students</td>
+            <td>
+                {% if room["name"] in booked_rooms %}
+                    <strong style="color: red;">🔴 BOOKED</strong>
+                {% else %}
+                    <strong style="color: green;">🟢 AVAILABLE</strong>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <hr>
+
+    <!-- ================================= -->
+    <!-- BOOK A HALL -->
+    <!-- ================================= -->
+
+    <h2>Book a Lecture Hall</h2>
+
+    <form action="/book" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label>Lecture Hall:</label><br>
+        <select name="room" required>
+            {% for room in classrooms %}
+                {% if room["name"] not in booked_rooms %}
+                    <option value="{{ room['name'] }}">
+                        {{ room["name"] }} - {{ room["capacity"] }} Seats
+                    </option>
+                {% endif %}
+            {% endfor %}
+        </select>
+
+        <br><br>
+
+        <label>Date:</label><br>
+        <input type="date" name="date" value="{{ check_date or '' }}" required>
+
+        <br><br>
+
+        <label>Start Time:</label><br>
+        <input type="time" name="start_time" value="{{ check_start_time or '' }}" required>
+
+        <br><br>
+
+        <label>End Time:</label><br>
+        <input type="time" name="end_time" value="{{ check_end_time or '' }}" required>
+
+        <br><br>
+
+        <label>Course Name / Course Code:</label><br>
+        <input type="text" name="course_name" placeholder="e.g. CSC 101 - Introduction to Computer Science" required>
+
+        <br><br>
+
+        <label>Purpose:</label><br>
+        <textarea name="purpose" rows="3" cols="40" placeholder="e.g. Continuous Assessment Test, Lecture, Practical..." required></textarea>
+
+        <br><br>
+
+        <button type="submit">Book Lecture Hall</button>
+
+    </form>
+
+    <hr>
+
+    <!-- ================================= -->
+    <!-- CURRENT BOOKINGS -->
+    <!-- ================================= -->
+
+    <h2>Current Bookings</h2>
+
+    {% if bookings %}
+
+    <table border="1" cellpadding="10">
+        <tr>
+            <th>Lecture Hall</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Course</th>
+            <th>Purpose</th>
+            <th>Booked By</th>
+            <th>Action</th>
+        </tr>
+
+        {% for booking in bookings %}
+        <tr>
+            <td>{{ booking["room"] }}</td>
+            <td>{{ booking["date"] }}</td>
+            <td>{{ booking["start_time"] }} - {{ booking["end_time"] }}</td>
+            <td>{{ booking["course_name"] or "—" }}</td>
+            <td>{{ booking["purpose"] }}</td>
+            <td>{{ booking["booked_by"] or "Unknown" }}</td>
+            <td>
+                {% if booking["user_id"] == session.get("user_id") %}
+                    <a href="{{ url_for('edit_booking', booking_id=booking['id']) }}">Edit</a>
+                    &nbsp;|&nbsp;
+                    <form action="{{ url_for('delete_booking', booking_id=booking['id']) }}" method="POST" style="display:inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete this booking?')">
+                            Delete
+                        </button>
+                    </form>
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    {% else %}
+        <p>No bookings yet.</p>
+    {% endif %}
+
+    <br><br>
+    <a href="/logout">Logout</a>
+
+</body>
+</html>

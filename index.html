@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Reservation System</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <h1>
+        <img class="site-logo" src="{{ url_for('static', filename='images/unilesa_logo.png') }}" alt="University of Ilesa Logo">
+        Unilesa Classroom Reservation and Booking System
+    </h1>
+
+    <p>Welcome to unilesa our Classroom Reservation and Booking System.</p>
+
+    <a href="/login">Login</a>
+    |
+    <a href="/register">Register</a>
+    |
+    <a href="/dashboard">Dashboard</a>
+
+</body>
+</html>

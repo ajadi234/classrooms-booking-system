@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Dashboard</title>
+
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+    <h1>
+        <img class="site-logo" src="{{ url_for('static', filename='images/unilesa_logo.png') }}" alt="University of Ilesa Logo">
+        Classroom Reservation System
+    </h1>
+
+    <h2>Admin Dashboard</h2>
+
+    <p>
+        Welcome,
+        <strong>{{ session.get("fullname") }}</strong>
+    </p>
+
+    <p>
+        Role:
+        <strong>{{ session.get("role") }}</strong>
+    </p>
+
+    <a href="/logout">Logout</a>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <hr>
+
+
+    <!-- ========================= -->
+    <!-- SYSTEM SUMMARY -->
+    <!-- ========================= -->
+
+    <h2>System Overview</h2>
+
+    <table border="1" cellpadding="10">
+        <tr>
+            <th>Total Registered Users</th>
+            <th>Total Lecture Halls</th>
+            <th>Total Bookings</th>
+        </tr>
+        <tr>
+            <td>{{ users|length }}</td>
+            <td>{{ classrooms|length }}</td>
+            <td>{{ bookings|length }}</td>
+        </tr>
+    </table>
+
+    <hr>
+
+
+    <!-- ========================= -->
+    <!-- REGISTERED USERS -->
+    <!-- ========================= -->
+
+    <h2>Registered Users</h2>
+
+    {% if users %}
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user["id"] }}</td>
+                <td>{{ user["fullname"] }}</td>
+                <td>{{ user["email"] }}</td>
+                <td>{{ user["role"] }}</td>
+                <td>
+                    <a href="{{ url_for('admin_reset_password', user_id=user['id']) }}">Reset Password</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No users have registered yet.</p>
+    {% endif %}
+
+    <hr>
+
+
+    <!-- ========================= -->
+    <!-- LECTURER / STUDENT COUNT -->
+    <!-- ========================= -->
+
+    <h2>User Categories</h2>
+
+    {% set student_count = namespace(value=0) %}
+    {% set lecturer_count = namespace(value=0) %}
+    {% set admin_count = namespace(value=0) %}
+
+    {% for user in users %}
+        {% if user["role"] == "Student" %}
+            {% set student_count.value = student_count.value + 1 %}
+        {% elif user["role"] == "Lecturer" %}
+            {% set lecturer_count.value = lecturer_count.value + 1 %}
+        {% elif user["role"] == "Admin" %}
+            {% set admin_count.value = admin_count.value + 1 %}
+        {% endif %}
+    {% endfor %}
+
+    <table border="1" cellpadding="10">
+        <tr>
+            <th>Students</th>
+            <th>Lecturers</th>
+            <th>Administrators</th>
+        </tr>
+        <tr>
+            <td>{{ student_count.value }}</td>
+            <td>{{ lecturer_count.value }}</td>
+            <td>{{ admin_count.value }}</td>
+        </tr>
+    </table>
+
+    <hr>
+
+
+    <!-- ========================= -->
+    <!-- ALL BOOKINGS -->
+    <!-- ========================= -->
+
+    <h2>All Classroom Bookings</h2>
+
+    <form method="GET" action="/admin">
+        <label>Room</label><br>
+        <input type="text" name="search_room" value="{{ search_room or '' }}" placeholder="e.g. Sawe Hall">
+        <br><br>
+
+        <label>Date</label><br>
+        <input type="date" name="search_date" value="{{ search_date or '' }}">
+        <br><br>
+
+        <label>Booked By (name)</label><br>
+        <input type="text" name="search_name" value="{{ search_name or '' }}" placeholder="e.g. John">
+        <br><br>
+
+        <button type="submit">Filter</button>
+        <a href="/admin">Clear Filters</a>
+    </form>
+
+    <br>
+
+    {% if bookings %}
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Lecture Hall</th>
+                <th>Course</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Purpose</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+            <tr>
+                <td>{{ booking["id"] }}</td>
+                <td>{{ booking["room"] }}</td>
+                <td>{{ booking["course_name"] or "Not specified" }}</td>
+                <td>{{ booking["date"] }}</td>
+                <td>{{ booking["start_time"] }} - {{ booking["end_time"] }}</td>
+                <td>{{ booking["purpose"] }}</td>
+                <td>
+                    <a href="{{ url_for('edit_booking', booking_id=booking['id']) }}">Edit</a>
+                    &nbsp;|&nbsp;
+                    <form action="{{ url_for('delete_booking', booking_id=booking['id']) }}" method="POST" style="display:inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete this booking?')">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No classroom bookings yet.</p>
+    {% endif %}
+
+    <hr>
+
+
+    <!-- ========================= -->
+    <!-- LECTURE HALLS -->
+    <!-- ========================= -->
+
+    <h2>Lecture Halls</h2>
+
+    <p>
+        Total halls:
+        <strong>{{ classrooms|length }}</strong>
+    </p>
+
+    <h3>Add New Lecture Hall</h3>
+
+    <form action="/admin/classrooms/add" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label>Hall Name</label><br>
+        <input type="text" name="name" placeholder="e.g. New Engineering Auditorium" required>
+        <br><br>
+
+        <label>Location</label><br>
+        <input type="text" name="location" placeholder="e.g. Faculty of Engineering" required>
+        <br><br>
+
+        <label>Capacity</label><br>
+        <input type="number" name="capacity" placeholder="e.g. 200" min="1" required>
+        <br><br>
+
+        <button type="submit">Add Hall</button>
+    </form>
+
+    <br>
+
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Lecture Hall</th>
+                <th>Location</th>
+                <th>Capacity</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for room in classrooms %}
+            <tr>
+                <td>{{ room["name"] }}</td>
+                <td>{{ room["location"] }}</td>
+                <td>{{ room["capacity"] }} Students</td>
+                <td>
+                    <a href="{{ url_for('edit_classroom', room_id=room['id']) }}">Edit</a>
+                    &nbsp;|&nbsp;
+                    <form action="{{ url_for('delete_classroom', room_id=room['id']) }}" method="POST" style="display:inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" onclick="return confirm('Remove this lecture hall? This will not affect existing bookings, but the hall will no longer be available for new bookings.')">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+    <hr>
+
+    <a href="/dashboard">Go to Normal Dashboard</a>
+    <br><br>
+    <a href="/logout">Logout</a>
+
+</body>
+
+</html>

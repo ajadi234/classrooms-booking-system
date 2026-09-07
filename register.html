@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <h1>
+        <img class="site-logo" src="{{ url_for('static', filename='images/unilesa_logo.png') }}" alt="University of Ilesa Logo">
+        Create Account
+    </h1>
+
+    <form action="/register" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <label>Full Name</label><br>
+        <input type="text" name="fullname" placeholder="Enter your full name" required>
+        <br><br>
+
+        <label>Role</label><br>
+        <select name="role" id="role" onchange="toggleFields()" required>
+            <option value="">-- Select Role --</option>
+            <option value="Student">Student</option>
+            <option value="Lecturer">Lecturer</option>
+        </select>
+        <br><br>
+
+        <!-- Student Fields -->
+        <div id="studentFields" style="display: none;">
+            <label>Matric Number</label><br>
+            <input type="text" name="matric_no" placeholder="e.g. CSC/2022/001">
+            <br><br>
+
+            <label>Department</label><br>
+            <input type="text" name="department" placeholder="e.g. Computer Science">
+            <br><br>
+
+            <label>Level</label><br>
+            <select name="level">
+                <option value="">-- Select Level --</option>
+                <option value="100">100 Level</option>
+                <option value="200">200 Level</option>
+                <option value="300">300 Level</option>
+                <option value="400">400 Level</option>
+                <option value="500">500 Level</option>
+            </select>
+            <br><br>
+        </div>
+
+        <!-- Lecturer Fields -->
+        <div id="lecturerFields" style="display: none;">
+            <label>Email</label><br>
+            <input type="email" name="email" placeholder="Enter your email">
+            <br><br>
+        </div>
+
+        <label>Password</label><br>
+        <div class="password-wrapper">
+            <input type="password" name="password" id="password" placeholder="Enter your password" required>
+            <button type="button" class="password-toggle-btn" onclick="togglePassword('password', this)">Show</button>
+        </div>
+        <br><br>
+
+        <label>Confirm Password</label><br>
+        <div class="password-wrapper">
+            <input type="password" name="confirm_password" id="confirm_password" placeholder="Re-enter your password" required>
+            <button type="button" class="password-toggle-btn" onclick="togglePassword('confirm_password', this)">Show</button>
+        </div>
+        <br><br>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <br>
+    <p>Already have an account? <a href="/login">Login Here</a></p>
+    <p><a href="/">Back Home</a></p>
+
+    <script>
+        function toggleFields() {
+            const role = document.getElementById("role").value;
+            const studentFields = document.getElementById("studentFields");
+            const lecturerFields = document.getElementById("lecturerFields");
+
+            if (role === "Student") {
+                studentFields.style.display = "block";
+                lecturerFields.style.display = "none";
+            } else if (role === "Lecturer") {
+                studentFields.style.display = "none";
+                lecturerFields.style.display = "block";
+            } else {
+                studentFields.style.display = "none";
+                lecturerFields.style.display = "none";
+            }
+        }
+
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                btn.textContent = "Hide";
+            } else {
+                input.type = "password";
+                btn.textContent = "Show";
+            }
+        }
+    </script>
+
+</body>
+</html>
